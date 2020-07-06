@@ -1,7 +1,9 @@
 package com.example.spendingtracker;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -19,7 +21,9 @@ import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +32,9 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,22 +63,47 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editTextDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final Calendar calendar = Calendar.getInstance();
-                int day = calendar.get(Calendar.DAY_OF_MONTH);
-                int month = calendar.get(Calendar.MONTH);
-                int year = calendar.get(Calendar.YEAR);
-                // date picker dialog
-                DatePickerDialog picker = new DatePickerDialog(MainActivity.this,
-                        new DatePickerDialog.OnDateSetListener() {
+            final Calendar calendar = Calendar.getInstance();
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+            int month = calendar.get(Calendar.MONTH);
+            int year = calendar.get(Calendar.YEAR);
+            // date picker dialog
+            DatePickerDialog picker = new DatePickerDialog(MainActivity.this,
+                new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                                Date date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
-                                editTextDate.setText(date_format.format(date));
-                            }
+                    Date date = new GregorianCalendar(year, monthOfYear, dayOfMonth).getTime();
+                    editTextDate.setText(date_format.format(date));
+                }
                         }, year, month, day);
-                picker.show();
+            picker.show();
             }
         });
+
+        // create a currency edit
+        editTextSum.addTextChangedListener(new TextWatcher() {
+            String currentCurrency = "";
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(!s.toString().equals(currentCurrency)) {
+                    editTextSum.removeTextChangedListener(this);
+                    String cleanString = s.toString().replaceAll("[£,.]", "");
+                    Double d = cleanString.equals("") ? 0 : Double.parseDouble(cleanString);
+                    String f = NumberFormat.getCurrencyInstance().format(d/100);
+                    currentCurrency = f;
+                    editTextSum.setText(f);
+                    editTextSum.setSelection(f.length());
+                    editTextSum.addTextChangedListener(this);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+        editTextSum.setText("0");
 
         buttonAddItem = (Button)findViewById(R.id.btn_add_item);
         buttonAddItem.setOnClickListener(this);
@@ -98,12 +130,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return super.onOptionsItemSelected(item);
     }
-    private void   addItemToSheet() {
 
-        final ProgressDialog loading = ProgressDialog.show(this,"Adding Item","Please wait");
+    private void addItemToSheet() {
+
         final String date = editTextDate.getText().toString().trim();
         final String sum = editTextSum.getText().toString().trim();
+        if(sum.equals("£0.00")) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Please enter a sum greater than £0.00.");
+            AlertDialog alert = builder.create();
+            alert.show();
+            return;
+        }
 
+        final ProgressDialog loading = ProgressDialog.show(this,"Adding Item","Please wait");
         StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec",
             new Response.Listener<String>() {
                 @Override
