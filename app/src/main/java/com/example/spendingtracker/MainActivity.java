@@ -45,7 +45,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    EditText editTextDate,editTextSum;
+    EditText editTextDate,editTextSum, editTextItem;
     Button buttonAddItem;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         editTextDate = (EditText)findViewById(R.id.editText_Date);
         editTextSum = (EditText)findViewById(R.id.editText_Sum);
+        editTextItem = (EditText)findViewById(R.id.editText_Item);
 
         // create a date picker
         final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -135,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         final String date = editTextDate.getText().toString().trim();
         final String sum = editTextSum.getText().toString().trim();
+        final String item = editTextItem.getText().toString().trim();
         if(sum.equals("£0.00")) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Please enter a sum greater than £0.00.");
@@ -164,8 +166,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 //here we pass params
                 parmas.put("action","addItem");
-                parmas.put("date",date);
-                parmas.put("sum",sum);
+                parmas.put("date", date);
+                parmas.put("sum", sum);
+                parmas.put("item", item);
 
                 return parmas;
             }
