@@ -30,12 +30,18 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.SimpleAdapter;
 import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -106,6 +112,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         editTextSum.setText("0");
 
+        getCategories();
+
         buttonAddItem = (Button)findViewById(R.id.btn_add_item);
         buttonAddItem.setOnClickListener(this);
     }
@@ -130,6 +138,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void getCategories() {
+        // Important: add the action at the end of the url
+        final ProgressDialog loading = ProgressDialog.show(this,"Loading","Please wait");
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec?action=getCategories",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        ArrayList<String> list = new ArrayList<>();
+
+                        try {
+                            JSONObject jobj = new JSONObject(response);
+                            JSONArray jarray = jobj.getJSONArray("categories");
+
+                            for (int i = 0; i < jarray.length(); i++) {
+
+                                JSONObject jo = jarray.getJSONObject(i);
+                                String category = jo.getString("category");
+                                list.add(category);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        // TODO: Populate drop down
+
+                        loading.dismiss();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {}
+                }
+        );
+        int socketTimeOut = 50000;
+        RetryPolicy policy = new DefaultRetryPolicy(socketTimeOut, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
+        stringRequest.setRetryPolicy(policy);
+        RequestQueue queue = Volley.newRequestQueue(this);
+        queue.add(stringRequest);
     }
 
     private void addItemToSheet() {
@@ -162,15 +210,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ) {
             @Override
             protected Map<String, String> getParams() {
-                Map<String, String> parmas = new HashMap<>();
-
-                //here we pass params
-                parmas.put("action","addItem");
-                parmas.put("date", date);
-                parmas.put("sum", sum);
-                parmas.put("item", item);
-
-                return parmas;
+                Map<String, String> params = new HashMap<>();
+                params.put("action","addItem");
+                params.put("date", date);
+                params.put("sum", sum);
+                params.put("item", item);
+                return params;
             }
         };
 
