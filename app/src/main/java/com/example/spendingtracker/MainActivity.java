@@ -29,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
@@ -53,9 +54,13 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    EditText editTextDate,editTextSum, editTextItem;
-    Spinner spinnerCategory;
+    EditText editTextDate,editTextSum, editTextItem, editTextReason;
+    Spinner spinnerCategory, spinnerWho;
+    CheckBox checkBoxEssential;
     Button buttonAddItem;
+
+    String sheetUrl = "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +69,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editTextDate = (EditText)findViewById(R.id.editText_Date);
         editTextSum = (EditText)findViewById(R.id.editText_Sum);
         editTextItem = (EditText)findViewById(R.id.editText_Item);
+        editTextReason = (EditText)findViewById(R.id.editText_Reason);
         spinnerCategory = (Spinner)findViewById(R.id.spinner_Category);
+        spinnerWho = (Spinner)findViewById(R.id.spinner_Who);
+        checkBoxEssential = (CheckBox) findViewById(R.id.checkBox_Essential);
 
         // create a date picker
         final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -116,7 +124,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         editTextSum.setText("0");
 
+        // set Category spinner
         getCategories();
+
+        // set Who spinner
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("Vanya");
+        list.add("Fraser");
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, list);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerWho.setAdapter(adapter);
 
         buttonAddItem = (Button)findViewById(R.id.btn_add_item);
         buttonAddItem.setOnClickListener(this);
@@ -147,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void getCategories() {
         // Important: add the action at the end of the url
         final ProgressDialog loading = ProgressDialog.show(this,"Loading","Please wait");
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec?action=getCategories",
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, sheetUrl+"?action=getCategories",
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -191,6 +208,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         final String date = editTextDate.getText().toString().trim();
         final String sum = editTextSum.getText().toString().trim();
         final String item = editTextItem.getText().toString().trim();
+        final String category = spinnerCategory.getSelectedItem().toString().trim();
+        final String essential = checkBoxEssential.isChecked() ? "Yes" : "No";
+        final String reason = editTextReason.getText().toString().trim();
+        final String who = spinnerWho.getSelectedItem().toString().trim();
+
         if(sum.equals("£0.00")) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Please enter a sum greater than £0.00.");
@@ -200,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         final ProgressDialog loading = ProgressDialog.show(this,"Adding Item","Please wait");
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec",
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, sheetUrl,
             new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
@@ -221,6 +243,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.put("date", date);
                 params.put("sum", sum);
                 params.put("item", item);
+                params.put("category", category);
+                params.put("essential", essential);
+                params.put("reason", reason);
+                params.put("who", who);
                 return params;
             }
         };
