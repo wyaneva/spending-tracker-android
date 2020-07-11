@@ -27,10 +27,12 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.SimpleAdapter;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -52,6 +54,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     EditText editTextDate,editTextSum, editTextItem;
+    Spinner spinnerCategory;
     Button buttonAddItem;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editTextDate = (EditText)findViewById(R.id.editText_Date);
         editTextSum = (EditText)findViewById(R.id.editText_Sum);
         editTextItem = (EditText)findViewById(R.id.editText_Item);
+        spinnerCategory = (Spinner)findViewById(R.id.spinner_Category);
 
         // create a date picker
         final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -163,7 +167,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             e.printStackTrace();
                         }
 
-                        // TODO: Populate drop down
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, list);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerCategory.setAdapter(adapter);
 
                         loading.dismiss();
                     }
