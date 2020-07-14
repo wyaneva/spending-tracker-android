@@ -3,8 +3,8 @@ package com.example.spendingtracker;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.android.volley.DefaultRetryPolicy;
@@ -15,11 +15,8 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 
 import android.text.Editable;
 import android.text.InputType;
@@ -32,7 +29,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -40,9 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -60,6 +54,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button buttonAddItem;
 
     String sheetUrl = "https://script.google.com/macros/s/AKfycbzz93Yb_MDZbljoENvVWFY2lBwOalZpTXosoQ8jcS5FedCFMpk/exec";
+
+    public static final String MyPreferences = "MyPrefs";
+    SharedPreferences sharedPreferences;
+    final String prefWhoKey = "Who";
+    final String Vanya = "Vanya";
+    final String Fraser = "Fraser";
+    String startingWhoString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,11 +130,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // set Who spinner
         ArrayList<String> list = new ArrayList<String>();
-        list.add("Vanya");
-        list.add("Fraser");
+        list.add(Vanya);
+        list.add(Fraser);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, list);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerWho.setAdapter(adapter);
+
+        // get the Who preference and set the spinner
+        SharedPreferences sharedPref = getSharedPreferences(MyPreferences, Context.MODE_PRIVATE);
+        startingWhoString = sharedPref.getString(prefWhoKey, Fraser);
+        spinnerWho.setSelection(adapter.getPosition(startingWhoString));
 
         buttonAddItem = (Button)findViewById(R.id.btn_add_item);
         buttonAddItem.setOnClickListener(this);
@@ -219,6 +225,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             AlertDialog alert = builder.create();
             alert.show();
             return;
+        }
+
+        // save Who preference if it has changed
+        if(!startingWhoString.equals(who)) {
+            SharedPreferences sharedPref = this.getSharedPreferences(MyPreferences, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(prefWhoKey, who);
+            editor.commit();
         }
 
         final ProgressDialog loading = ProgressDialog.show(this,"Adding Item","Please wait");
