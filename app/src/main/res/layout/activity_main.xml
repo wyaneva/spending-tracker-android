@@ -151,11 +151,11 @@
 
     <Button
         android:id="@+id/btn_add_item"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="164dp"
+        android:layout_height="64dp"
         android:layout_marginBottom="164dp"
         android:text="Add Item"
-        android:background="@color/colorAccent"
+        android:background="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
