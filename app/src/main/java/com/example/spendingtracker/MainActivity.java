@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button buttonAddItem;
 
     String sheetUrl = "https://script.google.com/macros/s/AKfycbxLYFGOHmeQ5Z9XKqa_gCrAS-XC9wywNhjQVZYavTxEtFVZPbfH/exec";
+    final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
     public static final String MyPreferences = "MyPrefs";
     SharedPreferences sharedPreferences;
@@ -61,6 +62,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final String Vanya = "Vanya";
     final String Fraser = "Fraser";
     String startingWhoString;
+
+    private void setDefaults() {
+        editTextDate.setText(date_format.format(new Date()));
+        editTextSum.setText("0");
+        editTextItem.setText("");
+        editTextReason.setText("");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +84,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkBoxEssential = (CheckBox) findViewById(R.id.checkBox_Essential);
 
         // create a date picker
-        final SimpleDateFormat date_format = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         String date_str = date_format.format(new Date());
         editTextDate.setText(date_str);
         editTextDate.setInputType(InputType.TYPE_DATETIME_VARIATION_DATE);
@@ -220,6 +227,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 public void onResponse(String response) {
                     loading.dismiss();
                     Toast.makeText(MainActivity.this,response,Toast.LENGTH_LONG).show();
+                    if(response.equals("Success")) {
+                        setDefaults();
+                    }
                 }
             },
             new Response.ErrorListener() {
